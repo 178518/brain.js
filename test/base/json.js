@@ -13,8 +13,8 @@ describe('JSON', () => {
     momentum: 0.01,
     callbackPeriod: 5,
     timeout: 3000 
-  }
-  originalNet.train([
+  };
+  const trainingData = [
     {
       input: {'0': Math.random(), b: Math.random()},
       output: {c: Math.random(), '0': Math.random()}
@@ -22,15 +22,17 @@ describe('JSON', () => {
       input: {'0': Math.random(), b: Math.random()},
       output: {c: Math.random(), '0': Math.random()}
     }
-  ], trainingOpts);
+  ];
+  const trainingResult = originalNet.train(trainingData, trainingOpts);
 
   trainingOpts.log = true;
 
   const serialized = originalNet.toJSON();
+  const serializedString = JSON.stringify(serialized);
   const serializedNet = new NeuralNetwork()
     .fromJSON(
       JSON.parse(
-        JSON.stringify(serialized)
+        serializedString
       )
     );
 
@@ -112,6 +114,18 @@ describe('JSON', () => {
       });
     });
 
+    it('updates only after trained on new data', () => {
+      const net = new NeuralNetwork()
+        .fromJSON(
+          JSON.parse(
+            JSON.stringify(serialized)
+          )
+        );
+      assert.equal(JSON.stringify(net.toJSON()), serializedString);
+      net.train(trainingData, trainingOpts);
+      const json = JSON.stringify(net.toJSON());
+      assert.notEqual(json, serializedString);
+    });
   });
 
   describe('.fromJSON()', () => {
@@ -277,5 +291,5 @@ describe('default net json', () => {
     };
     net.fromJSON({ sizes: [], layers: [] });
     assert(net.activation === 'sigmoid');
-  })
-})
+  });
+});
